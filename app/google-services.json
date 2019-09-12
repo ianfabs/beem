@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "518608586868",
+    "firebase_url": "https://bookmark-manager-neit.firebaseio.com",
+    "project_id": "bookmark-manager-neit",
+    "storage_bucket": "bookmark-manager-neit.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:518608586868:android:8461e6206f51995cd0e921",
+        "android_client_info": {
+          "package_name": "com.fabs.beem"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "518608586868-1dhdadguql94pfeoj7buffmoepue7i1k.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.fabs.beem",
+            "certificate_hash": "eb62421bd6a71ea87df2fe35d314a60bef20c1f9"
+          }
+        },
+        {
+          "client_id": "518608586868-gebg6vd2qjsa6ibba9egmsqbsjkk6mfj.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC13R6nX7Kg9w5ADqdGM3GZfPClc3klzKU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "518608586868-gebg6vd2qjsa6ibba9egmsqbsjkk6mfj.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
