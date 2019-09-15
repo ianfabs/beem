@@ -1,6 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Beem</string>
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+
+    <!-- Create Account/Login Fragment -->
+    <string name="f_ca_title">Create Account</string>
+    <string name="f_l_title">Login</string>
+    <string name="name_label">Name</string>
+    <string name="name_hint">Jane Doe</string>
+    <string name="email_label">Email</string>
+    <string name="email_hint">janedoe@example.com</string>
+    <string name="password_label">Password</string>
+    <string name="password_hint">Password</string>
+    <string name="confirm_label">Confirm</string>
+    <string name="confirm_hint">Confirm</string>
+    <string name="button_label">Submit</string>
 </resources>

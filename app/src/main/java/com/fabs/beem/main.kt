@@ -1,12 +1,20 @@
 package com.fabs.beem
 
 import android.content.Context
+import android.icu.text.AlphabeticIndex
 import android.net.Uri
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.LinearLayout
+import com.fabs.beem.atv.model.TreeNode
+import com.fabs.beem.atv.view.AndroidTreeView
+import com.google.firebase.firestore.FirebaseFirestore
+import kotlin.reflect.jvm.internal.impl.load.java.lazy.ContextKt.child
+
+
 
 
 // TODO: Rename parameter arguments, choose names that match
@@ -35,14 +43,23 @@ class main : Fragment() {
             param1 = it.getString(ARG_PARAM1)
             param2 = it.getString(ARG_PARAM2)
         }
+        var db = FirebaseFirestore.getInstance()
+        TODO("Get links associated with account")
     }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+        val view = inflater.inflate(R.layout.fragment_main, container, false)
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_main, container, false)
+        //Root
+
+
+        //Add AndroidTreeView into view.
+        val tView = AndroidTreeView(activity as Context, generateTree(activity as Context))
+        view.findViewById<LinearLayout>(R.id.tree).addView(tView.view)
+        return view
     }
 
     // TODO: Rename method, update argument and hook method into UI event
@@ -55,7 +72,7 @@ class main : Fragment() {
         if (context is OnFragmentInteractionListener) {
             listener = context
         } else {
-            throw RuntimeException(context.toString() + " must implement OnFragmentInteractionListener")
+            //throw RuntimeException(context.toString() + " must implement FragmentInteractionListeners")
         }
     }
 
@@ -98,5 +115,41 @@ class main : Fragment() {
                     putString(ARG_PARAM2, param2)
                 }
             }
+
+        var data = arrayOf(
+            Node("one", "", ""),
+            Node("two", "https://google.com/", "one"),
+            Node("three", "https://dev.to/", "one"),
+            Node("four", "https://fabs.dev", "")
+        )
+
+        fun generateTree(ctx: Context): TreeNode{
+            val root = TreeNode.root()
+            val map: HashMap<String, TreeNode> = hashMapOf()
+            for (n in data) {
+                val isBranch = n.uri == ""
+                //val icon = if (isBranch) R.drawable.ic_folder else R.drawable.ic_link
+                val childItem = MyHolder.IconTreeItem(n.label, n.uri)
+                val child = TreeNode(childItem).setViewHolder(
+                    MyHolder(
+                        ctx,
+                        n.uri == "",
+                        if (isBranch) R.layout.parent else R.layout.child
+                    )
+                )
+                
+                map.takeIf { isBranch }?.apply {
+                    this[n.label] = child as TreeNode
+                }
+                if (n.parent == "") {
+                    root.addChild(child)
+                }else {
+                    map[n.parent]!!.addChild(child)
+                }
+            }
+            return root
+        }
     }
 }
+
+data class Node(var label: String, var uri: String, var parent: String?)

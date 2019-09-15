@@ -2,15 +2,30 @@
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
             xmlns:app="http://schemas.android.com/apk/res-auto"
             xmlns:tools="http://schemas.android.com/tools" android:id="@+id/main_navigation"
-            app:startDestination="@id/main">
+            app:startDestination="@id/login">
 
-    <fragment android:id="@+id/login" android:name="com.fabs.beem.Login" android:label="fragment_login"
-              tools:layout="@layout/fragment_login"/>
-    <fragment android:id="@+id/createAccount" android:name="com.fabs.beem.CreateAccount"
-              android:label="fragment_create_account" tools:layout="@layout/fragment_create_account"/>
-    <fragment android:id="@+id/main" android:name="com.fabs.beem.main" android:label="fragment_main"
-              tools:layout="@layout/fragment_main">
-        <action android:id="@+id/to_createAccount" app:destination="@id/createAccount"/>
-        <action android:id="@+id/to_login" app:destination="@id/login"/>
+    <fragment
+            android:id="@+id/login"
+            android:name="com.fabs.beem.Login"
+            android:label="fragment_login"
+            tools:layout="@layout/fragment_login">
+        <deepLink
+                android:id="@+id/dlLogin"
+                app:uri="beem://signin" />
     </fragment>
+    <fragment
+            android:id="@+id/createAccount"
+            android:name="com.fabs.beem.CreateAccount"
+            android:label="fragment_create_account"
+            tools:layout="@layout/fragment_create_account">
+        <deepLink
+                android:id="@+id/dlCreateAccount"
+                app:uri="beem://signup" />
+    </fragment>
+    <fragment
+        android:id="@+id/main"
+        android:name="com.fabs.beem.main"
+        android:label="fragment_main"
+        tools:layout="@layout/fragment_main"
+    />
 </navigation>

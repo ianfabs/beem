@@ -7,6 +7,10 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
+import android.widget.EditText
+import android.widget.TextView
+import androidx.navigation.fragment.findNavController
 
 
 // TODO: Rename parameter arguments, choose names that match
@@ -27,7 +31,7 @@ class CreateAccount : Fragment() {
     // TODO: Rename and change types of parameters
     private var param1: String? = null
     private var param2: String? = null
-    private var listener: OnFragmentInteractionListener? = null
+    private var listeners: FragmentInteractionListeners? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -41,27 +45,45 @@ class CreateAccount : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+        val view: View = inflater.inflate(R.layout.fragment_create_account, container, false)
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_create_account, container, false)
-    }
+        val name = view.findViewById<EditText>(R.id.inName)
+        val email = view.findViewById<EditText>(R.id.inEmail)
+        val password = view.findViewById<EditText>(R.id.inPassword)
+        val confirm = view.findViewById<EditText>(R.id.inConfirm)
 
-    // TODO: Rename method, update argument and hook method into UI event
-    fun onButtonPressed(uri: Uri) {
-        listener?.onFragmentInteraction(uri)
+        view.findViewById<Button>(R.id.btnCreateAccount).setOnClickListener {
+            if (password.text.toString() == confirm.text.toString()) {
+                listeners?.onCreateAccountButtonInteraction(
+                    User(
+                        name = name.text.toString(),
+                        email = email.text.toString(),
+                        password = password.text.toString()
+                    )
+                )
+            } else {
+                confirm.error = "Passwords must match"
+            }
+        }
+
+        view.findViewById<TextView>(R.id.linkToLogin).setOnClickListener {
+            findNavController().navigate(Uri.parse("beem://signin"))
+        }
+        return view
     }
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        if (context is OnFragmentInteractionListener) {
-            listener = context
+        if (context is FragmentInteractionListeners) {
+            listeners = context
         } else {
-            throw RuntimeException(context.toString() + " must implement OnFragmentInteractionListener")
+            throw NotImplementedError("$context must implement FragmentInteractionListeners")
         }
     }
 
     override fun onDetach() {
         super.onDetach()
-        listener = null
+        listeners = null
     }
 
     /**
@@ -75,9 +97,8 @@ class CreateAccount : Fragment() {
      * (http://developer.android.com/training/basics/fragments/communicating.html)
      * for more information.
      */
-    interface OnFragmentInteractionListener {
-        // TODO: Update argument type and name
-        fun onFragmentInteraction(uri: Uri)
+    interface FragmentInteractionListeners {
+        fun onCreateAccountButtonInteraction(user: User)
     }
 
     companion object {

@@ -10,11 +10,21 @@ import android.widget.Toast
 import androidx.navigation.findNavController
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.firestore.FirebaseFirestore
+import java.time.Instant
+import java.time.format.DateTimeFormatter
+import java.util.*
+import kotlin.collections.HashMap
 import kotlin.reflect.KCallable
+import kotlin.reflect.full.declaredMemberProperties
+import kotlin.reflect.full.memberProperties
+import kotlin.reflect.jvm.javaField
+import kotlin.reflect.jvm.kotlinProperty
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), CreateAccount.FragmentInteractionListeners, Login.FragmentInteractionListeners {
 
-    private var mAuth: FirebaseAuth = FirebaseAuth.getInstance()
+    var mAuth: FirebaseAuth = FirebaseAuth.getInstance()
+    var userRef: User? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -24,14 +34,34 @@ class MainActivity : AppCompatActivity() {
     override fun onStart() {
         super.onStart()
         var currentUser: FirebaseUser? = mAuth.currentUser
-        findNavController(R.id.host).navigate(R.id.to_login)
     }
 
-    fun createUserWithEmailAndPassword(email: String, password: String) {
-        mAuth.createUserWithEmailAndPassword(email, password)
+    override fun onCreateAccountButtonInteraction(user: User) {
+        createUserWithEmailAndPassword(user)
+    }
+
+    override fun onLoginButtonInteraction(user: User) {
+        signInWithEmailAndPassword(user)
+    }
+
+    private fun createUserWithEmailAndPassword(user: User) {
+        val (_, _, email, password) = user
+        mAuth.createUserWithEmailAndPassword(email.toString(), password.toString())
             .addOnCompleteListener {
                 if(it.isSuccessful) {
+                    val db = FirebaseFirestore.getInstance()
+                    val userMap = user.toHashMap()
+                    db.collection("users")
+                        .add(userMap)
+                        .addOnSuccessListener { documentReference ->
+                            Log.d(TAG, "DocumentSnapshot added with ID: ${documentReference.id}")
+                        }
+                        .addOnFailureListener { e ->
+                            Log.w(TAG, "Error adding document", e)
+                        }
+
                     Log.d(TAG, "${::createUserWithEmailAndPassword.name}:success")
+                    toast(this, "createUserWithEmailAndPassword:success", Toast.LENGTH_SHORT, "top")
                 }else {
                     Log.w(TAG, "createUserWithEmail:failure", it.exception)
                     toast(this, "Authentication Failed", Toast.LENGTH_SHORT, "top")
@@ -40,8 +70,34 @@ class MainActivity : AppCompatActivity() {
             }
     }
 
+    private fun signInWithEmailAndPassword(user: User) {
+        val (_, _, email, password) = user
+        mAuth.signInWithEmailAndPassword(email.toString(), password.toString())
+            .addOnCompleteListener {
+                if (it.isSuccessful) {
+                    Log.d(TAG, "signInWithEmail:success")
+                    val user = mAuth.currentUser as FirebaseUser
+                    toast(this, "signInWithEmail:success", Toast.LENGTH_SHORT, "top")
+                    findNavController(R.id.host).navigate(R.id.main)
+                    val db = FirebaseFirestore.getInstance()
+                    db
+                        .collection("users")
+                        .whereEqualTo("email", email)
+                        .get()
+                        .addOnSuccessListener {
+                            userRef = User.fromHashMap(it.documents[0].data as HashMap<String, String>)
+                        }
+                } else {
+                    // If sign in fails, display a message to the user.
+                    Log.w(TAG, "signInWithEmail:failure", it.exception)
+                    toast(this, "Authentication failed.", Toast.LENGTH_SHORT, "top")
+                    // updateUI(null)
+                }
+            }
+    }
+
     companion object {
-        private val TAG = MainActivity::class.qualifiedName
+        public val TAG = MainActivity::class.qualifiedName
     }
 }
 
@@ -65,12 +121,9 @@ class MainActivity : AppCompatActivity() {
 fun toast(ctx: Context, msg: String, dur: Int, grav: String?, x: Int? = 0, y: Int? = 0) {
     val t = Toast.makeText(ctx, msg, dur)
     grav!!.run {
-        val capsG= this.map { it.toUpperCase() } as String
-        t.setGravity(Gravity::class.members.toTypedArray().let {
-            val i: Int = it.map{ c -> c.name }.indexOf(capsG)
-            it[i].call() as Int
-
-        }, x as Int, y as Int)
+        val fieldName: String = this.toUpperCase(Locale.getDefault())
+        val field = Gravity::class.java.getDeclaredField(fieldName).get(Int)!! as Int
+        t.setGravity(field, x as Int , y as Int)
     }
     t.show()
 }
