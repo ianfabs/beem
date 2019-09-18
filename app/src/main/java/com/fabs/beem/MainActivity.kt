@@ -51,6 +51,7 @@ class MainActivity : AppCompatActivity(), CreateAccount.FragmentInteractionListe
                 if(it.isSuccessful) {
                     val db = FirebaseFirestore.getInstance()
                     val userMap = user.toHashMap()
+                    userMap["id"] = it.result!!.user!!.uid
                     db.collection("users")
                         .add(userMap)
                         .addOnSuccessListener { documentReference ->

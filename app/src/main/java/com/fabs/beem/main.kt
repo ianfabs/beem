@@ -4,6 +4,7 @@ import android.content.Context
 import android.icu.text.AlphabeticIndex
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -11,6 +12,7 @@ import android.view.ViewGroup
 import android.widget.LinearLayout
 import com.fabs.beem.atv.model.TreeNode
 import com.fabs.beem.atv.view.AndroidTreeView
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlin.reflect.jvm.internal.impl.load.java.lazy.ContextKt.child
 
@@ -44,7 +46,7 @@ class main : Fragment() {
             param2 = it.getString(ARG_PARAM2)
         }
         var db = FirebaseFirestore.getInstance()
-        TODO("Get links associated with account")
+
     }
 
     override fun onCreateView(
@@ -54,7 +56,25 @@ class main : Fragment() {
         val view = inflater.inflate(R.layout.fragment_main, container, false)
         // Inflate the layout for this fragment
         //Root
-
+        val db = FirebaseFirestore.getInstance()
+        db.collection("resources")
+            .whereEqualTo("owner", FirebaseAuth.getInstance().currentUser!!.uid)
+            .get()
+            .addOnSuccessListener { documents ->
+                for (document in documents) {
+                    Log.d(main::class.qualifiedName, "${document.id} => ${document.data}")
+                    data.add(
+                        Node(
+                            label = document.get("label") as String,
+                            uri = document.get("uri") as String,
+                            parent = document.get("parent") as String
+                        )
+                    )
+                }
+            }
+            .addOnFailureListener { exception ->
+                Log.w(main::class.qualifiedName, "Error getting documents: ", exception)
+            }
 
         //Add AndroidTreeView into view.
         val tView = AndroidTreeView(activity as Context, generateTree(activity as Context))
@@ -116,7 +136,7 @@ class main : Fragment() {
                 }
             }
 
-        var data = arrayOf(
+        var data = arrayListOf(
             Node("one", "", ""),
             Node("two", "https://google.com/", "one"),
             Node("three", "https://dev.to/", "one"),
