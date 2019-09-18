@@ -45,7 +45,6 @@ class main : Fragment() {
             param1 = it.getString(ARG_PARAM1)
             param2 = it.getString(ARG_PARAM2)
         }
-        var db = FirebaseFirestore.getInstance()
 
     }
 
@@ -53,10 +52,11 @@ class main : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val view = inflater.inflate(R.layout.fragment_main, container, false)
         // Inflate the layout for this fragment
-        //Root
-        val db = FirebaseFirestore.getInstance()
+        val view = inflater.inflate(R.layout.fragment_main, container, false)
+
+        var db = FirebaseFirestore.getInstance()
+        var data = ArrayList<Node>()
         db.collection("resources")
             .whereEqualTo("owner", FirebaseAuth.getInstance().currentUser!!.uid)
             .get()
@@ -75,9 +75,8 @@ class main : Fragment() {
             .addOnFailureListener { exception ->
                 Log.w(main::class.qualifiedName, "Error getting documents: ", exception)
             }
-
         //Add AndroidTreeView into view.
-        val tView = AndroidTreeView(activity as Context, generateTree(activity as Context))
+        val tView = AndroidTreeView(activity as Context, generateTree(activity as Context, data))
         view.findViewById<LinearLayout>(R.id.tree).addView(tView.view)
         return view
     }
@@ -143,7 +142,7 @@ class main : Fragment() {
             Node("four", "https://fabs.dev", "")
         )
 
-        fun generateTree(ctx: Context): TreeNode{
+        fun generateTree(ctx: Context, data: ArrayList<Node>): TreeNode{
             val root = TreeNode.root()
             val map: HashMap<String, TreeNode> = hashMapOf()
             for (n in data) {
