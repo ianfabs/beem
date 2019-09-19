@@ -27,5 +27,21 @@
         android:name="com.fabs.beem.main"
         android:label="fragment_main"
         tools:layout="@layout/fragment_main"
-    />
+    >
+        <action
+                android:id="@+id/action_main_to_login"
+                app:destination="@id/login" />
+    </fragment>
+    <fragment
+            android:id="@+id/createLinkFragment"
+            android:name="com.fabs.beem.CreateLinkFragment"
+            android:label="fragment_create_link"
+            tools:layout="@layout/fragment_create_link" >
+        <deepLink
+                android:id="@+id/deepLink"
+                app:uri="beem://new" />
+        <action
+                android:id="@+id/action_createLinkToMain"
+                app:destination="@id/main" />
+    </fragment>
 </navigation>

@@ -9,11 +9,15 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.LinearLayout
+import androidx.navigation.fragment.findNavController
 import com.fabs.beem.atv.model.TreeNode
 import com.fabs.beem.atv.view.AndroidTreeView
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.android.synthetic.main.fragment_main.*
 import kotlin.reflect.jvm.internal.impl.load.java.lazy.ContextKt.child
 
 
@@ -55,29 +59,15 @@ class main : Fragment() {
         // Inflate the layout for this fragment
         val view = inflater.inflate(R.layout.fragment_main, container, false)
 
-        var db = FirebaseFirestore.getInstance()
-        var data = ArrayList<Node>()
-        db.collection("resources")
-            .whereEqualTo("owner", FirebaseAuth.getInstance().currentUser!!.uid)
-            .get()
-            .addOnSuccessListener { documents ->
-                for (document in documents) {
-                    Log.d(main::class.qualifiedName, "${document.id} => ${document.data}")
-                    data.add(
-                        Node(
-                            label = document.get("label") as String,
-                            uri = document.get("uri") as String,
-                            parent = document.get("parent") as String
-                        )
-                    )
-                }
-            }
-            .addOnFailureListener { exception ->
-                Log.w(main::class.qualifiedName, "Error getting documents: ", exception)
-            }
-        //Add AndroidTreeView into view.
+        // updateTree(view)
+
+        view.findViewById<FloatingActionButton>(R.id.btnCreate).setOnClickListener {
+            findNavController().navigate(Uri.parse("beem://new"))
+        }
+
         val tView = AndroidTreeView(activity as Context, generateTree(activity as Context, data))
         view.findViewById<LinearLayout>(R.id.tree).addView(tView.view)
+
         return view
     }
 
@@ -98,6 +88,32 @@ class main : Fragment() {
     override fun onDetach() {
         super.onDetach()
         listener = null
+    }
+
+    private fun updateTree(view: View) {
+        val db = FirebaseFirestore.getInstance()
+
+        db.collection("resources")
+            .whereEqualTo("owner", FirebaseAuth.getInstance().currentUser!!.uid)
+            .addSnapshotListener { querySnapshot, e ->
+                if (e != null) {
+                    Log.w(main::class.qualifiedName, "Listen failed.", e)
+                    return@addSnapshotListener
+                }
+
+                for (document in querySnapshot!!) {
+                    Log.d(main::class.qualifiedName, "${document.id} => ${document.data}")
+                    val data = ArrayList<Node>(querySnapshot.map {
+                        Node(
+                            label = it.getString("label")!!,
+                            uri = it.getString("uri")!!,
+                            parent = it.getString("parent")!!
+                        )
+                    })
+                    val tView = AndroidTreeView(activity as Context, generateTree(activity as Context, data))
+                    view.findViewById<LinearLayout>(R.id.tree).addView(tView.view)
+                }
+            }
     }
 
     /**
